@@ -5,43 +5,61 @@ from util import helper
 
 # ---- Edit
 ENABLE_MULTITHREAD_DOWNLOADS = True
+
+# TODO: move to config
+API_KEY = os.environ.get('NASA_API', 'DEMO_KEY')
 # ---- Edit
 
-def get_query(string):
+# Functions
+def get_query_data(string):
 	m, d, y = helper.parse_date(string)
-	return f'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={y}-{m}-{d}&api_key=DEMO_KEY'
 
-def get_urls(filepath):
-	urls = []
+	return (
+		y + m + d,
+		f'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={y}-{m}-{d}&api_key=' + API_KEY
+	)
+
+def get_url_data(filepath):
+	url_data = []
 	with open(filepath) as file:
 		for line in file:
-			query = get_query(line)
-			print(query)
+			date, api = get_query_data(line)
+			print(f'Getting api from: {api}')
 
-			with request.urlopen(query) as response:
+			with request.urlopen(api) as response:
 				html = response.read()
 
 			json_file = json.loads(html)
-			
+
+			# create folder to put the photos
+			if not os.path.exists('./data/' + date):
+				os.mkdir('./data/' + date)
+
+			# set the data
 			for data in json_file['photos']:
-				urls.append(data['img_src'])
-	return urls
+				url_data.append({
+					"date": date,
+					"url": data["img_src"]
+				})
+	return url_data
 
-def download_images(url):
-	target_path = os.path.join('./data', os.path.basename(url))
-	request.urlretrieve(url, target_path)
+def download_images(url_data):
+	target_path = os.path.join('./data/' + url_data['date'], os.path.basename(url_data['url']))
+	request.urlretrieve(url_data['url'], target_path)
 	return f'Downloaded: {target_path}'
+# Functions
 
-# create path if it doesn't exist
-if not os.path.exists('./data'):
-	os.mkdir('./data')
+if __name__ == '__main__':
+	# create path if it doesn't exist
+	if not os.path.exists('./data'):
+		os.mkdir('./data')
 
-urls = get_urls('./input.txt')
+	url_data = get_url_data('./input.txt')
 
-if ENABLE_MULTITHREAD_DOWNLOADS:
-	threads = ThreadPool(8).imap_unordered(download_images, urls)
-	for thread in threads:
-		print(thread)
-else:
-	for url in urls:
-		download_images(url)
+	if ENABLE_MULTITHREAD_DOWNLOADS:
+		threads = ThreadPool(8).imap_unordered(download_images, url_data)
+		for thread in threads:
+			print(thread)
+	else:
+		for data in url_data:
+			download_images(data)

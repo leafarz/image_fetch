@@ -17,6 +17,13 @@ def parse_date(string):
 		m = [str(i-1) for i, month in enumerate(calendar.month_abbr) if month.lower()==m[0:3].lower()]
 		m = ''.join(m)
 
+	if len(m) == 1:
+		m = '0' + m
+
+	# append 0 before day if 1 digit
+	if len(d) == 1:
+		d = '0' + d
+
 	# convert 2 digit year to 4 digits
 	if len(y) < 3:
 		curr_year = datetime.datetime.now().year % 100
