@@ -1,6 +1,11 @@
 import re, json, os
+from multiprocessing.pool import ThreadPool
 from urllib import request
 from util import helper
+
+# ---- Edit
+ENABLE_MULTITHREAD_DOWNLOADS = True
+# ---- Edit
 
 def get_query(string):
 	m, d, y = helper.parse_date(string)
@@ -22,15 +27,21 @@ def get_urls(filepath):
 				urls.append(data['img_src'])
 	return urls
 
-def download_images(urls):
-	for url in urls:
-		target_path = os.path.join('./data', os.path.basename(url))
-		request.urlretrieve(url, target_path)
-		print(f'Downloaded: {target_path}')
+def download_images(url):
+	target_path = os.path.join('./data', os.path.basename(url))
+	request.urlretrieve(url, target_path)
+	return f'Downloaded: {target_path}'
 
 # create path if it doesn't exist
 if not os.path.exists('./data'):
 	os.mkdir('./data')
 
 urls = get_urls('./input.txt')
-download_images(urls)
+
+if ENABLE_MULTITHREAD_DOWNLOADS:
+	threads = ThreadPool(8).imap_unordered(download_images, urls)
+	for thread in threads:
+		print(thread)
+else:
+	for url in urls:
+		download_images(url)
