@@ -8,6 +8,7 @@ ENABLE_MULTITHREAD_DOWNLOADS = True
 
 # TODO: move to config
 API_KEY = os.environ.get('NASA_API', 'DEMO_KEY')
+MEDIA_DIR = './media/'
 # ---- Edit
 
 # Functions
@@ -32,8 +33,8 @@ def get_url_data(filepath):
 			json_file = json.loads(html)
 
 			# create folder to put the photos
-			if not os.path.exists('./data/' + date):
-				os.mkdir('./data/' + date)
+			if not os.path.exists(MEDIA_DIR + date):
+				os.mkdir(MEDIA_DIR + date)
 
 			# set the data
 			for data in json_file['photos']:
@@ -44,15 +45,15 @@ def get_url_data(filepath):
 	return url_data
 
 def download_images(url_data):
-	target_path = os.path.join('./data/' + url_data['date'], os.path.basename(url_data['url']))
+	target_path = os.path.join(MEDIA_DIR + url_data['date'], os.path.basename(url_data['url']))
 	request.urlretrieve(url_data['url'], target_path)
 	return f'Downloaded: {target_path}'
 # Functions
 
 if __name__ == '__main__':
 	# create path if it doesn't exist
-	if not os.path.exists('./data'):
-		os.mkdir('./data')
+	if not os.path.exists(MEDIA_DIR):
+		os.mkdir(MEDIA_DIR)
 
 	url_data = get_url_data('./input.txt')
 
