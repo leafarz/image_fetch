@@ -1,4 +1,4 @@
-import re, json, os
+import re, json, os, webbrowser
 from multiprocessing.pool import ThreadPool
 from urllib import request
 from util import helper
@@ -70,3 +70,6 @@ if __name__ == '__main__':
 	else:
 		for data in url_data:
 			print(download_images(data))
+			
+	# open in chrome
+	webbrowser.open('file://' + os.path.realpath('index.html'))
