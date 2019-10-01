@@ -9,6 +9,7 @@ ENABLE_MULTITHREAD_DOWNLOADS = True
 # TODO: move to config
 API_KEY = os.environ.get('NASA_API', 'DEMO_KEY')
 MEDIA_DIR = './media/'
+JS_DIR = './js/'
 # ---- Edit
 
 # Functions
@@ -50,6 +51,13 @@ def get_url_data(filepath):
 
 def download_images(url_data):
 	target_path = os.path.join(MEDIA_DIR + url_data['date'], os.path.basename(url_data['url']))
+
+	if os.path.exists(target_path):
+		if not url_data['date'] in output:
+			output[url_data['date']] = []
+		output[url_data['date']].append(target_path)
+		
+		return f'File already downloaded: {url_data["url"]}'
 	try:
 		request.urlretrieve(url_data['url'], target_path)
 		return f'Downloaded: {target_path}'
@@ -63,6 +71,7 @@ if __name__ == '__main__':
 		os.mkdir(MEDIA_DIR)
 
 	url_data = get_url_data('./input.txt')
+	output = {}
 	if ENABLE_MULTITHREAD_DOWNLOADS:
 		threads = ThreadPool(8).imap_unordered(download_images, url_data)
 		for thread in threads:
@@ -70,6 +79,9 @@ if __name__ == '__main__':
 	else:
 		for data in url_data:
 			print(download_images(data))
-			
+
+	with open(os.path.join(JS_DIR, 'output.js'), 'w') as json_file:
+		json_file.write('data=' + json.dumps(output))
+		
 	# open in chrome
-	webbrowser.open('file://' + os.path.realpath('index.html'))
+	# webbrowser.open('file://' + os.path.realpath('index.html'))
