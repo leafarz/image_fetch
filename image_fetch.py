@@ -27,27 +27,34 @@ def get_url_data(filepath):
 			date, api = get_query_data(line)
 			print(f'Getting api from: {api}')
 
-			with request.urlopen(api) as response:
-				html = response.read()
+			req = request.Request(api)
+			try:	
+				with request.urlopen(api) as response:
+					html = response.read()
 
-			json_file = json.loads(html)
+					json_file = json.loads(html)
 
-			# create folder to put the photos
-			if not os.path.exists(MEDIA_DIR + date):
-				os.mkdir(MEDIA_DIR + date)
+					# create folder to put the photos
+					if not os.path.exists(MEDIA_DIR + date):
+						os.mkdir(MEDIA_DIR + date)
 
-			# set the data
-			for data in json_file['photos']:
-				url_data.append({
-					"date": date,
-					"url": data["img_src"]
-				})
+					# set the data
+					for data in json_file['photos']:
+						url_data.append({
+							"date": date,
+							"url": data["img_src"]
+						})
+			except:
+				print(f'Could not retrieve url: {api}')
 	return url_data
 
 def download_images(url_data):
 	target_path = os.path.join(MEDIA_DIR + url_data['date'], os.path.basename(url_data['url']))
-	request.urlretrieve(url_data['url'], target_path)
-	return f'Downloaded: {target_path}'
+	try:
+		request.urlretrieve(url_data['url'], target_path)
+		return f'Downloaded: {target_path}'
+	except:
+		return f'Could not download: {url_data["url"]}'
 # Functions
 
 if __name__ == '__main__':
@@ -56,11 +63,10 @@ if __name__ == '__main__':
 		os.mkdir(MEDIA_DIR)
 
 	url_data = get_url_data('./input.txt')
-
 	if ENABLE_MULTITHREAD_DOWNLOADS:
 		threads = ThreadPool(8).imap_unordered(download_images, url_data)
 		for thread in threads:
 			print(thread)
 	else:
 		for data in url_data:
-			download_images(data)
+			print(download_images(data))
