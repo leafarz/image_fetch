@@ -3,7 +3,7 @@
 - Can be viewed in browser.
 
 ## Running
-- Run via command `python image_fetch.y` and it will download files via dates in `input.txt` file.
+- Run via command `python image_fetch.py` and it will download files via dates in `input.txt` file.
 - This will open the browser upon finishing download. If for some reason a text editor is opened,
 this is probaby because that editor is set as default for opening html files. Just open the
 `index.html` under the *static* folder via browser. (There is no hosting involved, just all static files)
