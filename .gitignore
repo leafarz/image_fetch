@@ -1,5 +1,6 @@
 # user defined
 media
+js/output.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
