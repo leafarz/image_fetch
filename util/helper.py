@@ -14,7 +14,7 @@ def parse_date(string):
 	
 	# convert to number
 	if len(m) > 2:
-		m = [str(i-1) for i, month in enumerate(calendar.month_abbr) if month.lower()==m[0:3].lower()]
+		m = [str(i) for i, month in enumerate(calendar.month_abbr) if month.lower()==m[0:3].lower()]
 		m = ''.join(m)
 
 	if len(m) == 1:
@@ -36,4 +36,8 @@ def parse_date(string):
 		else:
 			y = str(1900 + int(y))
 
-	return (m, d, y)
+	try:
+		datetime.datetime.strptime(f'{y}-{m}-{d}', '%Y-%m-%d')
+		return (True, m, d, y)
+	except:
+		return (False, '0','0','0')

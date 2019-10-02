@@ -14,9 +14,10 @@ JS_DIR = './js/'
 
 # Functions
 def get_query_data(string):
-	m, d, y = helper.parse_date(string)
+	isValid, m, d, y = helper.parse_date(string)
 
 	return (
+		isValid,
 		y + m + d,
 		f'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?earth_date={y}-{m}-{d}&api_key=' + API_KEY
 	)
@@ -25,7 +26,12 @@ def get_url_data(filepath):
 	url_data = []
 	with open(filepath) as file:
 		for line in file:
-			date, api = get_query_data(line)
+			isValid, date, api = get_query_data(line)
+
+			if not isValid:
+				print(f'Invalid date: {line}!')
+				continue
+			
 			print(f'Getting api from: {api}')
 
 			req = request.Request(api)
@@ -49,17 +55,21 @@ def get_url_data(filepath):
 				print(f'Could not retrieve url: {api}')
 	return url_data
 
+def write_to_json(url_data, target_path):
+	if not url_data['date'] in output:
+		output[url_data['date']] = []
+		
+	output[url_data['date']].append(target_path)
+
 def download_images(url_data):
 	target_path = os.path.join(MEDIA_DIR + url_data['date'], os.path.basename(url_data['url']))
 
 	if os.path.exists(target_path):
-		if not url_data['date'] in output:
-			output[url_data['date']] = []
-		output[url_data['date']].append(target_path)
-		
+		write_to_json(url_data, target_path)
 		return f'File already downloaded: {url_data["url"]}'
 	try:
 		request.urlretrieve(url_data['url'], target_path)
+		write_to_json(url_data, target_path)
 		return f'Downloaded: {target_path}'
 	except:
 		return f'Could not download: {url_data["url"]}'
@@ -72,6 +82,7 @@ if __name__ == '__main__':
 
 	url_data = get_url_data('./input.txt')
 	output = {}
+
 	if ENABLE_MULTITHREAD_DOWNLOADS:
 		threads = ThreadPool(8).imap_unordered(download_images, url_data)
 		for thread in threads:
@@ -80,8 +91,9 @@ if __name__ == '__main__':
 		for data in url_data:
 			print(download_images(data))
 
+	# output json look up as js so that static html file can read without node
 	with open(os.path.join(JS_DIR, 'output.js'), 'w') as json_file:
 		json_file.write('data=' + json.dumps(output))
 		
 	# open in chrome
-	# webbrowser.open('file://' + os.path.realpath('index.html'))
+	webbrowser.open('file://' + os.path.realpath('./static/index.html'))
