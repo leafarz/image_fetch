@@ -24,6 +24,8 @@ def get_query_data(string):
 
 def get_url_data(filepath):
 	url_data = []
+
+	# open input file
 	with open(filepath) as file:
 		for line in file:
 			isValid, date, api = get_query_data(line)
@@ -32,10 +34,11 @@ def get_url_data(filepath):
 				print(f'Invalid date: {line}!')
 				continue
 			
-			print(f'Getting api from: {api}')
+			print(f'Getting data from: {api}')
+
 
 			req = request.Request(api)
-			try:	
+			try:
 				with request.urlopen(api) as response:
 					html = response.read()
 
@@ -94,6 +97,11 @@ if __name__ == '__main__':
 	# output json look up as js so that static html file can read without node
 	with open(os.path.join(JS_DIR, 'output.js'), 'w') as json_file:
 		json_file.write('data=' + json.dumps(output))
-		
+	
+	
+	files_to_display = sum(len(output[k]) for k in output)
+	print(f'Total images: {files_to_display}')
+
 	# open in chrome
+	print('Opening browser...')
 	webbrowser.open('file://' + os.path.realpath('./static/index.html'))
