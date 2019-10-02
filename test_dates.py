@@ -7,7 +7,13 @@ class TestDates(unittest.TestCase):
 		self.assertEqual(helper.parse_date('02/27/17')			,(True, '02', '27', '2017'), "Date not equal!")
 		self.assertEqual(helper.parse_date('June 2, 2018')		,(True, '06', '02', '2018'), "Date not equal!")
 		self.assertEqual(helper.parse_date('Jul-13-2016')		,(True, '07', '13', '2016'), "Date not equal!")
-		self.assertEqual(helper.parse_date('April 31, 2018')	,(False, '0', '0', '0'), "Date not equal!")
+		self.assertEqual(helper.parse_date('April 31, 2018')	,(False, '0', '0', '0'), "Date should be invalid!")
+
+	def test_invalid_dates(self):
+		self.assertEqual(helper.parse_date('0/1/01')			,(False, '0', '0', '0'), "Date should be invalid!")
+		self.assertEqual(helper.parse_date('1-0-01')			,(False, '0', '0', '0'), "Date should be invalid!")
+		self.assertEqual(helper.parse_date('1-50/01')			,(False, '0', '0', '0'), "Date should be invalid!")
+		self.assertEqual(helper.parse_date('13/1-01')			,(False, '0', '0', '0'), "Date should be invalid!")
 
 	# test per months
 	def test_months(self):
